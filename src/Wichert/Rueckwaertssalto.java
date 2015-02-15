@@ -287,6 +287,10 @@ public class Rueckwaertssalto {
 	public static void draw()
 	{
 		try {
+			//Beim ersten wird der Pfad bis zur neato.exe von GraphViz angegeben
+			//-Tpng ist f�r eine Datei mit der Endung .png
+			//Danach kommt der Pfad vom .dot file angegeben
+			//und der letzte Pfad ist der Pfad wo das File bzw. Bild hingespeichert werden soll.
 			Runtime.getRuntime().exec("C:\\schule\\2014-2015\\Insy\\graphviz-2.38\\release\\bin\\neato.exe -Tpng C:\\Users\\workspace\\Rückwärtssalto\\erd_test1.dot -o C:\\Users\\workspace\\Rückwärtssalto\\erd_test1.png");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
