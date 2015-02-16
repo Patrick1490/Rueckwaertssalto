@@ -220,9 +220,9 @@ public class Rueckwaertssalto
 									+ " [label=1];";
 							erd += "id" + x + 200 + " -- " + pkTableName
 									+ "[label=n];\n";
-							erd += "id" + x + "[label=<<u>" + fkColumnName
-									+ "</u>> ];\n"; 
-							erd += tables.get(i) + " -- id" + x + ";\n";
+							erd += "id" + x + "[shape=box, color=Invis label=<<u>" + fkColumnName
+									+ "</u>> fontcolor=Invis];\n"; 
+							erd += tables.get(i) + " -- id"  + x + "[dir=none color=Invis]\n";
 							x++;
 						} else {
 							
