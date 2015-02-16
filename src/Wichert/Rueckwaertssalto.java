@@ -9,7 +9,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -18,8 +17,8 @@ import java.util.HashMap;
  * und ein ERD der Datenbank.
  * 
  * 
- * @author Patrick Wichert
- * @version 10.01 2015
+ * @author Patrik Velkoski & Patrick Wichert
+ * @version 16.02.2015
  * 
  */
 
@@ -34,10 +33,9 @@ public class Rueckwaertssalto
 	 * @param dbname
 	 * @return
 	 */
-	public static String erzeugen(String host, String uname, String pwd,String dbname) 
+	public static String erzeugen(String host, String uname, String pwd,String dbname, String pathNeato, String pathDot, String speicher) 
 	{
 		Connection conn = null;
-		Statement stmt = null;
 		String outp = "";
 		try 
 		{
@@ -46,7 +44,6 @@ public class Rueckwaertssalto
 			// FÜr die Verbindung auf die Datenbank und zum einlesen der
 			// Statements
 			conn = DriverManager.getConnection(DB_URL, uname, pwd);
-			stmt = conn.createStatement();
 
 			ArrayList<String> tables = new ArrayList<>();
 			HashMap<String, ArrayList<String>> keys = new HashMap<>();
@@ -113,8 +110,12 @@ public class Rueckwaertssalto
 					}
 					// Wenn es noch nicht drinnen steht dann wird ein einfaches
 					// FK davor geschrieben.
+					String txt ="";
 					if (onlyFK)
-						alle_Keys.add("<<FK>>" + fk_table + "." + fk_name);
+					{
+						txt += fk_table.charAt(0)+fk_name;
+						alle_Keys.add(txt+":<<FK>>" + fk_table + "." + fk_name);
+					}
 				}
 				while (dmdattr.next()) 
 				{
@@ -144,13 +145,13 @@ public class Rueckwaertssalto
 					if(x+1 != tempo .size())
 						txt += tempo.get(x)+ ", ";
 					else
-						txt += tempo.get(x) +")";
+						txt += tempo.get(x) +")\n";
 				}
 			}
 			File txtDatei = new File("rm_"+dbname+".txt");
 			BufferedWriter input = new BufferedWriter(new FileWriter(txtDatei));
 			input.write(txt);
-			//System.out.println(txt);
+			System.out.println("Das RM ist unter 'rm_dbname.txt' gespeichert");
 			input.close();
 
 			// Dot-File erstellen
@@ -211,7 +212,7 @@ public class Rueckwaertssalto
 					} else {
 						pkTable = pkTableName;
 						fks.add(fk2.getString("PKCOLUMN_NAME"));
-						//Wenn primarykey ein foreignkey ist wird er rot und unterstrichen
+
 						if (pks.contains(fkColumnName)) {
 							erd += pkTableName + " [shape=box];\n"; 
 							erd += "id" + x + 200
@@ -220,12 +221,12 @@ public class Rueckwaertssalto
 									+ " [label=1];";
 							erd += "id" + x + 200 + " -- " + pkTableName
 									+ "[label=n];\n";
-							erd += "id" + x + "[label=<<u>" + fkColumnName
-									+ "</u>> ];\n"; 
-							erd += tables.get(i) + " -- id" + x + ";\n";
+							erd += "id" + x + "[shape=box, color=Invis label=<<u>" + fkColumnName
+									+ "</u>> fontcolor=Invis];\n"; 
+							erd += tables.get(i) + " -- id"  + x + "[dir=none color=Invis]\n";
 							x++;
 						} else {
-							//ansonsten wird der primarykey dann nur rot gehalten (kein strichliertes unterstreichen gefunden)
+
 							erd += pkTableName + " [shape=box];\n";
 							erd += "id" + x + 200
 									+ "[shape=diamond, label=hat]\n";
@@ -233,9 +234,9 @@ public class Rueckwaertssalto
 									+ " [label=1];";
 							erd += "id" + x + 200 + " -- " + pkTableName
 									+ "[label=n];\n";
-							erd += "id" + x + " [label=" + fkColumnName
-									+ " ];\n";
-							erd += tables.get(i) + " -- id" + x + ";\n";
+							erd += "id" + x + " [shape=box, color=Invis label=" + fkColumnName
+									+ " fontcolor=Invis];\n";
+							erd += tables.get(i) + " -- id" + x + "[dir=none color=Invis]\n";
 							x++;
 						}
 					}
@@ -272,37 +273,34 @@ public class Rueckwaertssalto
 				erd += "\n";
 			}
 			erd += "}";
-
-			stmt.close();
-
+			
 			//Erzeugt ein File 
 			File dotDatei = new File("erd_"+dbname+".dot");
+			System.out.println("Das Dot file ist unter 'erd_dbname.dot' gespeichert!");
 			BufferedWriter output = new BufferedWriter(new FileWriter(dotDatei));
 			output.write(erd);
 			output.close();
-			Rueckwaertssalto.draw();
+			if(pathDot.equals("") || speicher.equals("") || pathNeato.equals(""))
+			{
+				System.out.println("Es fehlt der Pfad vom Dot File oder der Ort zum Speichern des png's bzw. der Pfad des Neato Files könnte auch fehlen!");
+				System.out.println("Bitte nochmal überprüfen!");
+			}
+			else
+				Rueckwaertssalto.draw(pathNeato, pathDot, speicher);
 
 			conn.close();
-		} catch (SQLException se) {
-			se.printStackTrace();
-		} catch (Exception e) {
+		} 
+		catch (SQLException se) 
+		{
+			System.out.println("Der User stimmt nicht mit dem Passwort überein!");
+		} 
+		catch (Exception e) 
+		{
 			e.printStackTrace();
-		} finally {
-			try {
-				if (stmt != null)
-					stmt.close();
-			} catch (SQLException se2) {
-			}
-			try {
-				if (conn != null)
-					conn.close();
-			} catch (SQLException se) {
-				se.printStackTrace();
-			}
 		}
 		return outp;
 	}
-	public static void draw()
+	public static void draw(String pathNeato, String pathDot, String speicher)
 	{
 		try 
 		{
@@ -310,10 +308,10 @@ public class Rueckwaertssalto
 			//-Tpng ist für eine Datei mit der Endung .png
 			//Danach kommt der Pfad vom .dot file angegeben
 			//und der letzte Pfad ist der Pfad wo das File bzw. Bild hingespeichert werden soll.
-			Runtime.getRuntime().exec("C:\\schule\\2014-2015\\Insy\\graphviz-2.38\\release\\bin\\neato.exe -Tpng C:\\Users\\workspace\\Rueckwaertssalto\\erd_test1.dot -o C:\\Users\\workspace\\Rueckwaertssalto\\erd_test1.png");
+			Runtime.getRuntime().exec(pathNeato +" -Tpng "+pathDot+" -o "+ speicher);
+			System.out.println("Das Bild wurde erstellt und gespeichert");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Upps da ist etwas schief gelaufen!");
 		}
 	}
 }
