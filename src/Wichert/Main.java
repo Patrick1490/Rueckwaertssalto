@@ -19,7 +19,7 @@ public class Main
 		if (args.length < 3) 
 		{
 			System.out
-					.println("-h ... Hostname\n-u ... Benutzername\n-p ... Passwort\n-d ... Datenbank\n-s ... Feld, nach dem sortiert werden soll\n-r ... Sortierrichtung. Standard: ASC\n-w ... eine Bedingung in SQL-Syntax, die zum Filtern der Tabelle verwendet wird\n-t ... Trennzeichen, dass für die Ausgabe verwendet werden soll\n-f ... Kommagetrennte Liste der Felder, die im Ergebnis enthalten sein sollen\n-o ... Name der Ausgabedatei sonst: Ausgabe auf der Konsole\n-T ... Tabellenname");
+					.println("-h ... Hostname\n-u ... Benutzername\n-p ... Passwort\n-d ... Datenbank");
 			System.exit(1);
 		}
 

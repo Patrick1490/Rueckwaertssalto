@@ -59,15 +59,15 @@ public class Rueckwaertssalto
 			// finden
 			while (dmdrs.next()) 
 			{
-				// Gibt die Metadaten Information zurï¿½ck (3 steht fï¿½r den
+				// Gibt die Metadaten Information zurück (3 steht für den
 				// Tabellennamen)
 				String table_name = dmdrs.getString(3);
 				// Für die Primary Keys
 				ResultSet dmdpk = dmd.getPrimaryKeys(null, null, table_name),
-				// Für die Foreign Keys
-				dmdfk = dmd.getImportedKeys(conn.getCatalog(), null, table_name),
-				// Für die Attribute
-				dmdattr = dmd.getColumns(null, null, table_name, null);
+						// Für die Foreign Keys
+						dmdfk = dmd.getImportedKeys(conn.getCatalog(), null, table_name),
+						// Für die Attribute
+						dmdattr = dmd.getColumns(null, null, table_name, null);
 				// Für jede Tabelle eine ArrayList
 				ArrayList<String> alle_Keys = new ArrayList<>();
 				// Rausfinden der Primary Keys
@@ -98,8 +98,8 @@ public class Rueckwaertssalto
 				dmdfk = dmd.getImportedKeys(conn.getCatalog(), null, table_name);
 				while (dmdfk.next()) 
 				{
-					String fk_name = dmdfk.getString("FKCOLUMN_NAME"), fk_table = dmdfk
-							.getString("FKTABLE_NAME");
+					String fk_name = dmdfk.getString("FKCOLUMN_NAME"), 
+							fk_table = dmdfk.getString("FKTABLE_NAME");
 					boolean onlyFK = true;
 					for (int i = 0; i < alle_Keys.size(); ++i) 
 					{
@@ -119,16 +119,16 @@ public class Rueckwaertssalto
 				while (dmdattr.next()) 
 				{
 					String key_name = dmdattr.getString("COLUMN_NAME");
-					boolean isIncl = true;
+					boolean isVorhanden = true;
 					for (int i = 0; i < alle_Keys.size(); ++i) 
 					{
 						if (alle_Keys.get(i).contains(key_name)) 
 						{
-							isIncl = false;
+							isVorhanden = false;
 							break;
 						}
 					}
-					if (isIncl)
+					if (isVorhanden)
 						alle_Keys.add(key_name);
 				}
 				keys.put(table_name, alle_Keys);
@@ -137,19 +137,22 @@ public class Rueckwaertssalto
 			String txt = "";
 			for (int i = 0; i < tables.size(); i++) 
 			{
-				txt += "Tabelle: " + tables.get(i) +"\n";
+				txt += tables.get(i)+"(";
 				ArrayList<String> tempo = keys.get(tables.get(i));
 				for (int x = 0; x < tempo.size(); x++) 
 				{
-					txt += tempo.get(x)+ "\n";
+					if(x+1 != tempo .size())
+						txt += tempo.get(x)+ ", ";
+					else
+						txt += tempo.get(x) +")";
 				}
 			}
 			File txtDatei = new File("rm_"+dbname+".txt");
 			BufferedWriter input = new BufferedWriter(new FileWriter(txtDatei));
 			input.write(txt);
-			System.out.println(txt);
+			//System.out.println(txt);
 			input.close();
-			
+
 			// Dot-File erstellen
 			// Im RM werden zwar schon die ganzen PKs und FKs gespeichert aber
 			// hier wird nochmal alles aufgerufen
@@ -158,7 +161,7 @@ public class Rueckwaertssalto
 
 			// x Variable, weil nodes nicht den selben namen haben dürfen,labels
 			// aber schon. Wird immer wieder erhöht
-			
+
 			int x = 0;
 			//dot-Files beginnen mit graph G( bzw je nach dem welche Struktur verwendet(zb. diagraph))
 			String erd = "graph G{ overlap = false \n";
@@ -184,7 +187,7 @@ public class Rueckwaertssalto
 					if (fkList.contains(pk1.getString(4))) {
 						pks.add(pk1.getString(4));
 					} else {
-					//Label u für unterstreichen	
+						//Label u für unterstreichen	
 						erd += "id" + x + " [label=<<u>" + pk1.getString(4)
 								+ "</u>>];\n";
 						erd += tables.get(i) + " -- id" + x + ";\n";
@@ -202,9 +205,9 @@ public class Rueckwaertssalto
 				while (fk2.next()) {
 					String fkColumnName =fk2.getString("FKCOLUMN_NAME");
 					String pkTableName = fk2.getString("PKTABLE_NAME");
-				//Gibt es im pkTable schon den pk der tabelle wird nichts unternommen	
+					//Gibt es im pkTable schon den pk der tabelle wird nichts unternommen	
 					if (pkTable.equals(pkTableName)) {
-				//ansonsten wird die beziehung gebaut und mit den jeweiligen labels versehen
+						//ansonsten wird die beziehung gebaut und mit den jeweiligen labels versehen
 					} else {
 						pkTable = pkTableName;
 						fks.add(fk2.getString("PKCOLUMN_NAME"));
@@ -218,7 +221,7 @@ public class Rueckwaertssalto
 							erd += "id" + x + 200 + " -- " + pkTableName
 									+ "[label=n];\n";
 							erd += "id" + x + "[label=<<u>" + fkColumnName
-									+ "</u>> fontcolor=Red];\n"; 
+									+ "</u>> ];\n"; 
 							erd += tables.get(i) + " -- id" + x + ";\n";
 							x++;
 						} else {
@@ -231,7 +234,7 @@ public class Rueckwaertssalto
 							erd += "id" + x + 200 + " -- " + pkTableName
 									+ "[label=n];\n";
 							erd += "id" + x + " [label=" + fkColumnName
-									+ " fontcolor=Red];\n";
+									+ " ];\n";
 							erd += tables.get(i) + " -- id" + x + ";\n";
 							x++;
 						}
@@ -240,7 +243,7 @@ public class Rueckwaertssalto
 
 				fk2.close();
 				// Columns der Tabellen geholt
-				
+
 				ArrayList<String> columns1 = new ArrayList<String>();
 				ResultSet result = dmd.getColumns(null, null, tables.get(i),
 						null);
@@ -250,7 +253,7 @@ public class Rueckwaertssalto
 				result.close();
 				// Alles was kein Pk/Fk ist wird hinzugefï¿½gt 
 				for (int k = 0; k < columns1.size(); k++) {
-					
+
 					if (pks.contains(columns1.get(k).toString())
 							&& fks.contains(columns1.get(k).toString())) {
 
@@ -301,12 +304,13 @@ public class Rueckwaertssalto
 	}
 	public static void draw()
 	{
-		try {
+		try 
+		{
 			//Beim ersten wird der Pfad bis zur neato.exe von GraphViz angegeben
 			//-Tpng ist für eine Datei mit der Endung .png
 			//Danach kommt der Pfad vom .dot file angegeben
 			//und der letzte Pfad ist der Pfad wo das File bzw. Bild hingespeichert werden soll.
-			Runtime.getRuntime().exec("C:\\schule\\2014-2015\\Insy\\graphviz-2.38\\release\\bin\\neato.exe -Tpng C:\\Users\\workspace\\RÃ¼ckwÃ¤rtssalto\\erd_test1.dot -o C:\\Users\\workspace\\RÃ¼ckwÃ¤rtssalto\\erd_test1.png");
+			Runtime.getRuntime().exec("C:\\schule\\2014-2015\\Insy\\graphviz-2.38\\release\\bin\\neato.exe -Tpng C:\\Users\\workspace\\Rueckwaertssalto\\erd_test1.dot -o C:\\Users\\workspace\\Rueckwaertssalto\\erd_test1.png");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
