@@ -3,11 +3,9 @@ package wichert;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-//import java.io.IOException;
-//import java.io.RandomAccessFile;
 
 /**
- * Die Klasse Main führt die Methode execute aus nachdem sie nachgesehen hat
+ * Die Klasse Main führt die Methode erzeugen aus nachdem sie nachgesehen hat
  * welche der Befehlsfelder ausgefüllt sich und welche nicht und diese in die
  * zugehörigen Variablen speichert.
  * 
@@ -15,9 +13,11 @@ import java.io.RandomAccessFile;
  * @version 10.01.2015
  * 
  */
-public class Main {
+public class Main 
+{
 	public static void main(String[] args) throws IOException {
-		if (args.length < 3) {
+		if (args.length < 3) 
+		{
 			System.out
 					.println("-h ... Hostname\n-u ... Benutzername\n-p ... Passwort\n-d ... Datenbank\n-s ... Feld, nach dem sortiert werden soll\n-r ... Sortierrichtung. Standard: ASC\n-w ... eine Bedingung in SQL-Syntax, die zum Filtern der Tabelle verwendet wird\n-t ... Trennzeichen, dass für die Ausgabe verwendet werden soll\n-f ... Kommagetrennte Liste der Felder, die im Ergebnis enthalten sein sollen\n-o ... Name der Ausgabedatei sonst: Ausgabe auf der Konsole\n-T ... Tabellenname");
 			System.exit(1);
@@ -45,15 +45,14 @@ public class Main {
 			}
 		}
 		if (output.equals("")) {
-			System.out.println(Rueckwaertssalto.execute(host, uname, pwd, dbname));
+			System.out.println(Rueckwaertssalto.erzeugen(host, uname, pwd, dbname));
 		} 
 		else 
 		{
 			try 
 			{
 				RandomAccessFile file = new RandomAccessFile(output, "rw");
-				file.writeUTF(Rueckwaertssalto
-						.execute(host, uname, pwd, dbname));
+				file.writeUTF(Rueckwaertssalto.erzeugen(host, uname, pwd, dbname));
 				file.close();
 			} 
 			catch (IOException e) 

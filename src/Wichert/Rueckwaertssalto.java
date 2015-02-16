@@ -14,16 +14,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Die Klasse Exporter bastelt mit den eingegebenen Befehlen einen Select befehl
- * zusammen und dieser wird dann aus der Datenbank die auch angegeben werden
- * muss ausgelesen.
+ * Die Klasse Rueckwaertssalto liest aus einer Datenbank die Daten aus und erzeugt ein RM
+ * und ein ERD der Datenbank.
+ * 
  * 
  * @author Patrick Wichert
  * @version 10.01 2015
  * 
  */
 
-public class Rueckwaertssalto {
+public class Rueckwaertssalto 
+{
 	static final String JDBC = "com.mysql.jdbc.Driver";
 
 	/**
@@ -33,54 +34,56 @@ public class Rueckwaertssalto {
 	 * @param dbname
 	 * @return
 	 */
-	public static String execute(String host, String uname, String pwd,
-			String dbname) {
+	public static String erzeugen(String host, String uname, String pwd,String dbname) 
+	{
 		Connection conn = null;
 		Statement stmt = null;
 		String outp = "";
-		try {
+		try 
+		{
 			String DB_URL = "jdbc:mysql://" + host + "/" + dbname;
 			Class.forName(JDBC);
-			// Fï¿½r die Verbindung auf die Datenbank und zum einlesen der
+			// FÜr die Verbindung auf die Datenbank und zum einlesen der
 			// Statements
 			conn = DriverManager.getConnection(DB_URL, uname, pwd);
 			stmt = conn.createStatement();
 
 			ArrayList<String> tables = new ArrayList<>();
-			;
 			HashMap<String, ArrayList<String>> keys = new HashMap<>();
-			;
 
 			// dmd gibt alle Daten der Datenbank aus
 			DatabaseMetaData dmd = conn.getMetaData();
 			// Holt alle Tabellen der Datenbank
 			ResultSet dmdrs = dmd.getTables(null, null, null, null);
-			// Geht Schritt fï¿½r Schritt alle Tabellen durch um die Keys zu
+			// Geht Schritt für Schritt alle Tabellen durch um die Keys zu
 			// finden
-			while (dmdrs.next()) {
+			while (dmdrs.next()) 
+			{
 				// Gibt die Metadaten Information zurï¿½ck (3 steht fï¿½r den
 				// Tabellennamen)
 				String table_name = dmdrs.getString(3);
-				// Fï¿½r die Primary Keys
+				// Für die Primary Keys
 				ResultSet dmdpk = dmd.getPrimaryKeys(null, null, table_name),
-				// Fï¿½r die Foreign Keys
-				dmdfk = dmd
-						.getImportedKeys(conn.getCatalog(), null, table_name),
-				// Fï¿½r die Attribute
+				// Für die Foreign Keys
+				dmdfk = dmd.getImportedKeys(conn.getCatalog(), null, table_name),
+				// Für die Attribute
 				dmdattr = dmd.getColumns(null, null, table_name, null);
-				// Fï¿½r jede Tabelle eine ArrayList
+				// Für jede Tabelle eine ArrayList
 				ArrayList<String> alle_Keys = new ArrayList<>();
 				// Rausfinden der Primary Keys
-				while (dmdpk.next()) {
+				while (dmdpk.next()) 
+				{
 					boolean isPK = true;
 					// Rausfinden der Foreign Keys
-					while (dmdfk.next()) {
+					while (dmdfk.next()) 
+					{
 						// Alle Columnnames die einen Foreignkey haben
 						String name = dmdfk.getString("FKCOLUMN_NAME");
 						// Schauen ob der Foreignkey auch ein Primarykey ist.
 						// Wenn der Fall eintritt wird es mit PK und FK
 						// markiert.
-						if (dmdpk.getString(4).equals(name)) {
+						if (dmdpk.getString(4).equals(name)) 
+						{
 							isPK = false;
 							String fk_table = dmdfk.getString("FKTABLE_NAME");
 							alle_Keys.add("<<PK>><<FK>>" + fk_table + "."
@@ -92,16 +95,18 @@ public class Rueckwaertssalto {
 						alle_Keys.add("<<PK>>" + dmdpk.getString(4));
 				}
 				// holt alle Foreign keys der Tabelle
-				dmdfk = dmd
-						.getImportedKeys(conn.getCatalog(), null, table_name);
-				while (dmdfk.next()) {
+				dmdfk = dmd.getImportedKeys(conn.getCatalog(), null, table_name);
+				while (dmdfk.next()) 
+				{
 					String fk_name = dmdfk.getString("FKCOLUMN_NAME"), fk_table = dmdfk
 							.getString("FKTABLE_NAME");
 					boolean onlyFK = true;
-					for (int i = 0; i < alle_Keys.size(); ++i) {
+					for (int i = 0; i < alle_Keys.size(); ++i) 
+					{
 						// Wenn der Key schon mit PK und FK markiert sein sollte
 						// dann passiert nichts.
-						if (alle_Keys.get(i).contains(fk_name)) {
+						if (alle_Keys.get(i).contains(fk_name)) 
+						{
 							onlyFK = false;
 							break;
 						}
@@ -111,11 +116,14 @@ public class Rueckwaertssalto {
 					if (onlyFK)
 						alle_Keys.add("<<FK>>" + fk_table + "." + fk_name);
 				}
-				while (dmdattr.next()) {
+				while (dmdattr.next()) 
+				{
 					String key_name = dmdattr.getString("COLUMN_NAME");
 					boolean isIncl = true;
-					for (int i = 0; i < alle_Keys.size(); ++i) {
-						if (alle_Keys.get(i).contains(key_name)) {
+					for (int i = 0; i < alle_Keys.size(); ++i) 
+					{
+						if (alle_Keys.get(i).contains(key_name)) 
+						{
 							isIncl = false;
 							break;
 						}
@@ -126,30 +134,37 @@ public class Rueckwaertssalto {
 				keys.put(table_name, alle_Keys);
 				tables.add(table_name);
 			}
-
-			for (int i = 0; i < tables.size(); i++) {
-				System.out.println("Tabelle: " + tables.get(i));
+			String txt = "";
+			for (int i = 0; i < tables.size(); i++) 
+			{
+				txt += "Tabelle: " + tables.get(i) +"\n";
 				ArrayList<String> tempo = keys.get(tables.get(i));
-				for (int x = 0; x < tempo.size(); x++) {
-					System.out.println(tempo.get(x));
+				for (int x = 0; x < tempo.size(); x++) 
+				{
+					txt += tempo.get(x)+ "\n";
 				}
-			}		
+			}
+			File txtDatei = new File("rm_"+dbname+".txt");
+			BufferedWriter input = new BufferedWriter(new FileWriter(txtDatei));
+			input.write(txt);
+			System.out.println(txt);
+			input.close();
 			
-			// ERD-Diagramm zeichnen/Dot-File erstellen
+			// Dot-File erstellen
 			// Im RM werden zwar schon die ganzen PKs und FKs gespeichert aber
 			// hier wird nochmal alles aufgerufen
-			// weil es umstï¿½ndlich wird die ganzen Sachen nochmal aufzurufen und
+			// weil es umständlich wird die ganzen Sachen nochmal aufzurufen und
 			// duchzuordnen etc.
 
-			// x Variable, weil nodes nicht den selben namen haben dÃ¼rfen,labels
-			// aber schon. Wird immer wieder erhï¿½ht
+			// x Variable, weil nodes nicht den selben namen haben dürfen,labels
+			// aber schon. Wird immer wieder erhöht
 			
 			int x = 0;
 			//dot-Files beginnen mit graph G( bzw je nach dem welche Struktur verwendet(zb. diagraph))
 			String erd = "graph G{ overlap = false \n";
 			//Geht alles solange durch, bis alle Tabellen durchgearbeitet worden sind
 			for (int i = 0; i < tables.size(); i++) {
-				//Gibt den Entitï¿½ten Box-Form
+				//Gibt den Entitäten Box-Form
 				erd += tables.get(i) + " [shape=box];\n";
 				ResultSet fk1 = dmd.getImportedKeys(null, null,
 						tables.get(i));
@@ -163,13 +178,13 @@ public class Rueckwaertssalto {
 				ResultSet pk1 = dmd.getPrimaryKeys(null, null, tables.get(i));
 				ArrayList<String> pks = new ArrayList<String>();
 				//Wenn in der fkListe schon ein pk vorhanden ist
-				//wird normal geaddet ohne dass der primarykey das label u bekommt (fï¿½r nur primarykey)
-				//(wird dann spï¿½ter verarbeitet)
+				//wird normal geaddet ohne dass der primarykey das label u bekommt (für nur primarykey)
+				//(wird dann später verarbeitet)
 				while (pk1.next()) {
 					if (fkList.contains(pk1.getString(4))) {
 						pks.add(pk1.getString(4));
 					} else {
-					//Label u fï¿½r unterstreichen	
+					//Label u für unterstreichen	
 						erd += "id" + x + " [label=<<u>" + pk1.getString(4)
 								+ "</u>>];\n";
 						erd += tables.get(i) + " -- id" + x + ";\n";
@@ -182,7 +197,7 @@ public class Rueckwaertssalto {
 				ResultSet fk2 = dmd.getImportedKeys(null, null,
 						tables.get(i));
 				ArrayList<String> fks = new ArrayList<String>();
-				//pkTable ï¿½berprï¿½ft dann ob es eine beziehung schon mal gab oder nicht
+				//pkTable überprüft dann ob es eine beziehung schon mal gab oder nicht
 				String pkTable = "";
 				while (fk2.next()) {
 					String fkColumnName =fk2.getString("FKCOLUMN_NAME");
